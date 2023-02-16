@@ -1,22 +1,5 @@
-.model tiny
-.code
-org 100h
-
 HexClrCode = 62h	;Colour attribute
 HexStartOffset = 70Eh	;Starting offset in video memory
-
-NumToConvert = 0F12Ah
-
-Start:		
-		mov ax, 0B800h
-		mov es, ax
-
-		mov ax, NumToConvert
-		mov bx, HexStartOffset
-
-		call ax2hex		
-
-		ret
 
 ;----------------------
 ; Output number in ax in hex through video memory
@@ -29,34 +12,31 @@ Start:
 ;		dl
 ;		cx
 ;---------------------
-
+.code
 ax2hex		proc
-
-??CurrentOffset:  dw ?
-??CurrentCX:	  dw ?
 
 		mov cx, 4
 
-??Next:		mov word ptr offset ??CurrentOffset, bx
-		mov word ptr offset ??CurrentCX, cx		
+@@Next:		mov word ptr offset @@CurrentOffset, bx
+		mov word ptr offset @@CurrentCX, cx		
 
 		mov bx, ax
 		
 		dec cx
-		jz ??EndShift		
+		jz @@EndShift		
 		
-??Shift:	shr bx, 4
-		loop ??Shift
-??EndShift:
+@@Shift:	shr bx, 4
+		loop @@Shift
+@@EndShift:
 
 
 		and bx, 0Fh; 0000 0000 0000 1111b		
 
-		mov cx, word ptr offset ??CurrentCX
+		mov cx, word ptr offset @@CurrentCX
 
-		mov dl, byte ptr HexDigits[bx]
+		mov dl, byte ptr @@HexDigits[bx]
 
-		mov bx, word ptr ??CurrentOffset
+		mov bx, word ptr @@CurrentOffset
 
 		mov byte ptr es:[bx], dl
 		mov byte ptr es:[bx + 1], HexClrCode
@@ -64,11 +44,13 @@ ax2hex		proc
 		inc bx
 		inc bx 	
 
-		loop ??Next	
+		loop @@Next	
 
 		ret
+
+.data
+@@HexDigits: db '0123456789ABCDEF'
+@@CurrentOffset: dw ?
+@@CurrentCX:	dw ?
+
 		endp
-
-HexDigits: db '0123456789ABCDEF'
-
-end  Start

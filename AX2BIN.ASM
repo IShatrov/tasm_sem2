@@ -1,22 +1,5 @@
-.model tiny
-.code
-org 100h
-
 BinClrCode = 29h	;Colour attribute
 BinStartOffset = 64Ah	;Starting offset in video memory
-
-NumToConvert = 123h
-
-Start:		
-		mov ax, 0B800h
-		mov es, ax
-
-		mov ax, NumToConvert
-		mov bx, BinStartOffset
-
-		call ax2bin		
-
-		ret
 
 ;----------------------
 ; Output number in ax in binary through video memory
@@ -29,32 +12,30 @@ Start:
 ;		bx
 ;		dx
 ;---------------------
-
+.code
 ax2bin		proc
 
 		mov cx, 10h                 ; set amount of repeats
 		mov dx, 8000h               ; dx = 1000 0000 0000 0000b		
 
-??Next:
+@@Next:
 		test ax, dx
 
-		jz ??WriteZero              ; if ax && dx = 0, jump
+		jz @@WriteZero              ; if ax && dx = 0, jump
 		mov byte ptr es:[bx], '1'
 		mov byte ptr es:[bx + 1], BinClrCode
-		jmp ??Fin
+		jmp @@Fin
  		
-??WriteZero:
+@@WriteZero:
 		mov byte ptr es:[bx], '0'
 		mov byte ptr es:[bx  + 1], BinClrCode
 		
-??Fin:
+@@Fin:
 		inc bx
 		inc bx
 		shr dx, 1
 
-		loop ??Next		
+		loop @@Next		
 
 		ret
 		endp
-
-end Start

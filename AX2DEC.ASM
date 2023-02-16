@@ -1,22 +1,5 @@
-.model tiny
-.code
-org 100h
-
 DecClrCode = 1Eh	;Colour attribute
 DecStartOffset = 9DEh	;Starting offset in video memory
-
-NumToConvert = 1201d
-
-Start:		
-		mov ax, 0B800h
-		mov es, ax
-
-		mov ax, NumToConvert
-		mov bx, DecStartOffset
-
-		call ax2dec		
-
-		ret
 
 ;----------------------
 ; Output number in ax in decimal through video memory
@@ -30,12 +13,12 @@ Start:
 ;		cx
 ;		dx
 ;---------------------
-
+.code
 ax2dec		proc
 		
 		mov cx, 0Ah; number to divide by
 
-??Next:
+@@Next:
 		xor dx, dx
 		div cx
 
@@ -49,9 +32,7 @@ ax2dec		proc
 
 		cmp ax, 0
 
-		jne ??Next
+		jne @@Next
 
 		ret
 		endp
-
-end  Start

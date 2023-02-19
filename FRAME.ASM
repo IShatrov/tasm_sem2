@@ -10,6 +10,12 @@ BotRight = 0BCh
 Horizontal = 0CDh
 Vertical = 0BAh
 
+PutChar macro char, incr
+		mov byte ptr es:[bx], char
+;		mov byte ptr es:[bx + 1], FrameClrCode
+		add bx, incr
+		endm
+		
 local @@
 
 Start:		
@@ -62,50 +68,36 @@ frame		proc
 		sub dl, 2
 		sub dh, 2
 		
-		mov byte ptr es:[bx],TopLeft 
-;		mov byte ptr es:[bx + 1], FrameClrCode
-
-		add bx, 2
+		PutChar TopLeft, 2
 
 		mov cl, dl
 
 @@DrawHoriz1:	
-		mov byte ptr es:[bx], Horizontal
-;		mov byte ptr es:[bx + 1], FrameClrCode
-		add bx, 2
+		PutChar Horizontal, 2
 		loop @@DrawHoriz1  
 
-		mov byte ptr es:[bx], TopRight
-		add bx, 0A0h
+		PutChar TopRight, 0A0h
 		
 		mov cl, dh
 		
 @@DrawVert1:	
-		mov byte ptr es:[bx], Vertical
-;		mov byte ptr es:[bx + 1], FrameClrCode
-		add bx, 0A0h
+		PutChar Vertical, 0A0h
 		loop @@DrawVert1 
 
-		mov byte ptr es:[bx], BotRight
-		sub bx, 2
+		PutChar BotRight, -2
 		
 		mov cl, dl
 
 @@DrawHoriz2:	
-		mov byte ptr es:[bx], Horizontal
-;		mov byte ptr es:[bx + 1], FrameClrCode
-		sub bx, 2
+		PutChar Horizontal, -2
 		loop @@DrawHoriz2
 
-		mov byte ptr es:[bx], BotLeft
-		sub bx, 0A0h 
-
+		PutChar BotLeft, -0A0h
+		
 		mov cl, dh
 		
 @@DrawVert2:	
-		mov byte ptr es:[bx], Vertical
-;		mov byte ptr es:[bx + 1], FrameClrCode
-		sub bx, 0A0h
+		PutChar Vertical, -0A0h
 		loop @@DrawVert2 
 
 		ret

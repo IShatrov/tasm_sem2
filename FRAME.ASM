@@ -2,19 +2,14 @@
 .code
 org 100h
 
-FrameClrCode = 1Eh	;Colour attribute
+FrameClrCode = 13h	;Colour attribute
 TopLeft = 0C9h
 TopRight = 0BBh
 BotLeft = 0C8h
 BotRight = 0BCh
 Horizontal = 0CDh
 Vertical = 0BAh
-
-PutChar macro char, incr
-		mov byte ptr es:[bx], char
-;		mov byte ptr es:[bx + 1], FrameClrCode
-		add bx, incr
-		endm
+SpaceChar = 20h
 		
 local @@
 
@@ -28,7 +23,7 @@ Start:
 		mov word ptr offset xCoord, ax
 
 		call getnum	;y coordinate
-		mov cl, 0A0h
+		mov cl, 160d
 		mul cl
 
 		add ax, word ptr offset xCoord
@@ -42,64 +37,102 @@ Start:
 
 		mov dl, byte ptr offset FrameWidth
 		mov bx, word ptr offset FrameOffset
-
+		
+		mov si, offset DisplayString
+		mov ah, FrameClrCode
+		push bx
 		call frame		
+		add sp, 2
 
 		ret
 
 ;----------------------
 ; Draw frame
 ;----------------------
-;Entry:		bx = top left corner offset in video memory
+;Entry:		Start offset
 ;		dl = width
 ;		dh = height
+;		ah = color code
+;		si = string offset
 ;Exit:          None
 ;Expect:	es = 0B800h
 ;Destroy:	ax
 ;		bx
 ;		cx
 ;		dx
+;		si
+;		di
 ;---------------------
 
 frame		proc
+		push bp
+		mov bp, sp
 		
 		xor cx, cx
 
 		sub dl, 2
 		sub dh, 2
-		
-		PutChar TopLeft, 2
 
+		mov di, [bp + 4]	;start offset 
+
+		mov al, TopLeft
+
+		mov word ptr es:[di], ax
+		
+		add di, 2
 		mov cl, dl
+		mov al, Horizontal
+		rep stosw
 
-@@DrawHoriz1:	
-		PutChar Horizontal, 2
-		loop @@DrawHoriz1  
+		mov al, TopRight
+		mov word ptr es:[di], ax
 
-		PutChar TopRight, 0A0h
-		
+		mov di, [bp + 4]	;start offset
+		add di, 160d
 		mov cl, dh
-		
-@@DrawVert1:	
-		PutChar Vertical, 0A0h
-		loop @@DrawVert1 
+		mov al, Vertical
 
-		PutChar BotRight, -2
-		
+		mov bx, di
+@@Lines:
+		mov word ptr es:[di], ax
+		add di, 2
+		mov al, SpaceChar
+
+		push cx
 		mov cl, dl
+		rep stosw
 
-@@DrawHoriz2:	
-		PutChar Horizontal, -2
-		loop @@DrawHoriz2
+		mov al, Vertical
+		mov word ptr es:[di], ax
+		pop cx
+		add bx, 160d
+		mov di, bx
 
-		PutChar BotLeft, -0A0h
+		loop @@Lines
 		
-		mov cl, dh
+		mov al, BotLeft
+		mov word ptr es:[di], ax
+		add di, 2
 		
-@@DrawVert2:	
-		PutChar Vertical, -0A0h
-		loop @@DrawVert2 
+		mov al, Horizontal
+		mov cl, dl
+		rep stosw
+		
+		mov al, BotRight
+		mov word ptr es:[di], ax
 
+		mov di, [bp + 4]
+		add di, 160d + 2
+
+@@WriteText:
+		lodsb
+		cmp al, 0
+		je @@Fin
+		stosw
+		jmp @@WriteText
+
+@@Fin:
+		pop bp
 		ret
 		endp
 
@@ -109,5 +142,6 @@ include getnum.asm
 xCoord:	dw ?
 FrameOffset: dw ?
 FrameWidth: db ?
+DisplayString: db "your ad here", 0
 
 end  Start

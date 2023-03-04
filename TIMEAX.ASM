@@ -163,36 +163,47 @@ New08		proc
 		mov si, offset AxStr
 		mov di, FrameOffs + 160d + 2
 		call write
-		mov ax, [bp + 18]
-		mov bx, FrameOffs + 160d + 2 + 8
-		call ax2bin
-
+		
 		mov ah, BinClrCode
 		mov si, offset BxStr
 		mov di, FrameOffs + 160d*2 + 2
-		call write		
-		mov ax, [bp + 16]
-		mov bx, FrameOffs + 160d*2 + 2 + 8
-		call ax2bin
+ 		call write
 
 		mov ah, BinClrCode
 		mov si, offset CxStr
 		mov di, FrameOffs + 160d*3 + 2
-		call write		
-		mov ax, [bp + 10]
-		mov bx, FrameOffs + 160d*3 + 2 + 8
-		call ax2bin
-
+		call write
+		
 		mov ah, BinClrCode
 		mov si, offset DxStr
 		mov di, FrameOffs + 160d*4 + 2
-		call write		
-		mov ax, [bp + 8]
+		call write
+
+
+		
+		mov ax, [bp + 14]
+		mov bx, FrameOffs + 160d + 2 + 8
+		call ax2bin
+	
+		mov ax, [bp + 12]
+		mov bx, FrameOffs + 160d*2 + 2 + 8
+		call ax2bin
+		
+		mov ax, [bp + 6]
+		mov bx, FrameOffs + 160d*3 + 2 + 8
+		call ax2bin
+	
+		mov ax, [bp + 4]
 		mov bx, FrameOffs + 160d*4 + 2 + 8
 		call ax2bin
 
 Done:
+		mov al, 20h
+		out 20h, al
 		pop ds di dx cx bp es bx ax
+
+		iret
+
 
 		db 0EAh
 Old08Ofs:	dw 0
@@ -210,7 +221,7 @@ OldVidMem: dw FrameWidth*FrameHeight DUP(0)
 AxStr: db 'ax:', 0
 BxStr: db 'bx:', 0
 CxStr: db 'cx:', 0
-DxStr: db 'ds:', 0
+DxStr: db 'dx:', 0
 
 end Start
 

@@ -3,6 +3,13 @@
 .code
 org 100h
 
+FrameOffs = 160d*8 + 40d
+FrameWidth = 22d
+FrameHeight = 6
+
+
+local @@
+
 Start:
 		cli
 		xor bx, bx
@@ -37,12 +44,15 @@ Start:
 		mov dx, offset EOP
 		shr dx, 4
 		inc dx
+		add dx, 18*3 + 20
+
+		mov byte ptr ShouldWrite, 0
 
 		mov ax, 3100h
 		int 21h
 
 New09		proc
-		push ax
+		push ax bx cx si di es ds
 	
 		in al, 60h
 		
@@ -52,14 +62,60 @@ New09		proc
 		je TurnOff
 		jmp NotMyKey
 
-TurnOn:
-		mov byte ptr ShouldWrite, 1
-		jmp Fin
+TurnOn:				
+		mov ax, ds
+		mov es, ax
+		mov di, offset OldVidMem
+		mov ax, 0B800h
 
-TurnOff:
+		push ds
+
+		mov ds, ax
+		mov ax, FrameOffs
+		mov si, ax
+
+		mov cx, FrameHeight
+
+SaveVid:
+		push cx
+		mov cx, FrameWidth
+		rep movsw
+		pop cx
+		add ax, 160d
+		mov si, ax
+		loop SaveVid
+
+		pop ds
+		mov byte ptr ShouldWrite, 1
+
+		jmp Finish
+
+TurnOff:				
 		mov byte ptr ShouldWrite, 0
 
-Fin:
+		push ds
+
+		mov si, offset OldVidMem
+		mov ax, 0B800h
+		mov es, ax
+		mov ax, FrameOffs
+		mov di, ax
+
+
+		mov cx, FrameHeight
+
+WriteVid:
+		push cx
+		mov cx, FrameWidth
+		rep movsw
+		pop cx
+		add ax, 160d
+		mov di, ax
+		loop WriteVid
+
+		pop ds		
+
+Finish:
 		in al, 61h
 		or al, 80h
 		out 61h, al
@@ -68,11 +124,11 @@ Fin:
 		mov al, 20h
 		out 20h, al
 		
-		pop ax
+		pop ds es di si cx bx ax
 		iret
 
 NotMyKey:
-		pop ax
+		pop ds es di si cx bx ax
 
 		db 0EAh
 Old09Ofs:	dw 0
@@ -81,8 +137,8 @@ Old09Seg:	dw 0
 		endp
 
 New08		proc
-		push ax bx es bp cx dx
-	
+		push ax bx es bp cx dx di ds
+
 		mov bx, 0B800h
 		mov es, bx
 
@@ -93,21 +149,68 @@ New08		proc
 
 		mov bp, sp
 
-		mov ax, [bp + 14]
-		mov bx, 160d*5 + 80d
+		push FrameOffs
+		mov dl, FrameWidth
+		mov dh, FrameHeight
+		mov ah, BinClrCode
+		call frame
+		add sp, 2
+		
+		mov ax, cs
+		mov ds, ax
+
+		mov ah, BinClrCode
+		mov si, offset AxStr
+		mov di, FrameOffs + 160d + 2
+		call write
+		mov ax, [bp + 18]
+		mov bx, FrameOffs + 160d + 2 + 8
+		call ax2bin
+
+		mov ah, BinClrCode
+		mov si, offset BxStr
+		mov di, FrameOffs + 160d*2 + 2
+		call write		
+		mov ax, [bp + 16]
+		mov bx, FrameOffs + 160d*2 + 2 + 8
+		call ax2bin
+
+		mov ah, BinClrCode
+		mov si, offset CxStr
+		mov di, FrameOffs + 160d*3 + 2
+		call write		
+		mov ax, [bp + 10]
+		mov bx, FrameOffs + 160d*3 + 2 + 8
+		call ax2bin
+
+		mov ah, BinClrCode
+		mov si, offset DxStr
+		mov di, FrameOffs + 160d*4 + 2
+		call write		
+		mov ax, [bp + 8]
+		mov bx, FrameOffs + 160d*4 + 2 + 8
 		call ax2bin
 
 Done:
-		pop dx cx bp es bx ax
+		pop ds di dx cx bp es bx ax
 
 		db 0EAh
 Old08Ofs:	dw 0
 Old08Seg:	dw 0
 			endp
 
+include writeln.asm
+include frame.asm
 include ax2bin.asm
-
+.data
 ShouldWrite:	db 0
+
+OldVidMem: dw FrameWidth*FrameHeight DUP(0)
+
+AxStr: db 'ax:', 0
+BxStr: db 'bx:', 0
+CxStr: db 'cx:', 0
+DxStr: db 'ds:', 0
 
 end Start
 

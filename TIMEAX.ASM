@@ -12,8 +12,13 @@ DrawReg macro StackOffset, VidOffset
 		mov bx, FrameOffs + VidOffset
 		call ax2hex
 		endm
-	
-
+		
+DrawName macro NameOffset, VidOffset
+		mov ah, HexClrCode
+		mov si, offset NameOffset
+		mov di, FrameOffs + VidOffset
+		call write
+		endm
 
 local @@
 
@@ -166,27 +171,11 @@ New08		proc
 		mov ax, cs
 		mov ds, ax
 
-		mov ah, HexClrCode
-		mov si, offset AxStr
-		mov di, FrameOffs + 160d + 2
-		call write
+		DrawName AxStr, 160d+2
+		DrawName BxStr, 160d*2+2
+		DrawName CxStr, 160d*3+2
+		DrawName DxStr, 160d*4+2
 		
-		mov ah, HexClrCode
-		mov si, offset BxStr
-		mov di, FrameOffs + 160d*2 + 2
- 		call write
-
-		mov ah, HexClrCode
-		mov si, offset CxStr
-		mov di, FrameOffs + 160d*3 + 2
-		call write
-		
-		mov ah, HexClrCode
-		mov si, offset DxStr
-		mov di, FrameOffs + 160d*4 + 2
-		call write
-
-
 		DrawReg 14, 160d+10d 
 		DrawReg 12, 160d*2+10d
 		DrawReg 6, 160d*3+10d

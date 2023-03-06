@@ -4,7 +4,7 @@
 org 100h
 
 FrameOffs = 160d*8 + 40d
-FrameWidth = 22d
+FrameWidth = 12d
 FrameHeight = 6
 
 
@@ -152,29 +152,29 @@ New08		proc
 		push FrameOffs
 		mov dl, FrameWidth
 		mov dh, FrameHeight
-		mov ah, BinClrCode
+		mov ah, HexClrCode
 		call frame
 		add sp, 2
 		
 		mov ax, cs
 		mov ds, ax
 
-		mov ah, BinClrCode
+		mov ah, HexClrCode
 		mov si, offset AxStr
 		mov di, FrameOffs + 160d + 2
 		call write
 		
-		mov ah, BinClrCode
+		mov ah, HexClrCode
 		mov si, offset BxStr
 		mov di, FrameOffs + 160d*2 + 2
  		call write
 
-		mov ah, BinClrCode
+		mov ah, HexClrCode
 		mov si, offset CxStr
 		mov di, FrameOffs + 160d*3 + 2
 		call write
 		
-		mov ah, BinClrCode
+		mov ah, HexClrCode
 		mov si, offset DxStr
 		mov di, FrameOffs + 160d*4 + 2
 		call write
@@ -183,19 +183,19 @@ New08		proc
 		
 		mov ax, [bp + 14]
 		mov bx, FrameOffs + 160d + 2 + 8
-		call ax2bin
+		call ax2hex
 	
 		mov ax, [bp + 12]
 		mov bx, FrameOffs + 160d*2 + 2 + 8
-		call ax2bin
+		call ax2hex
 		
 		mov ax, [bp + 6]
 		mov bx, FrameOffs + 160d*3 + 2 + 8
-		call ax2bin
+		call ax2hex
 	
 		mov ax, [bp + 4]
 		mov bx, FrameOffs + 160d*4 + 2 + 8
-		call ax2bin
+		call ax2hex
 
 Done:
 		mov al, 20h
@@ -212,7 +212,7 @@ Old08Seg:	dw 0
 
 include writeln.asm
 include frame.asm
-include ax2bin.asm
+include ax2hex.asm
 .data
 ShouldWrite:	db 0
 

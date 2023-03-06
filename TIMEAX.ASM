@@ -7,6 +7,13 @@ FrameOffs = 160d*8 + 40d
 FrameWidth = 12d
 FrameHeight = 6
 
+DrawReg macro StackOffset, VidOffset
+		mov ax, [bp + StackOffset]
+		mov bx, FrameOffs + VidOffset
+		call ax2hex
+		endm
+	
+
 
 local @@
 
@@ -180,22 +187,10 @@ New08		proc
 		call write
 
 
-		
-		mov ax, [bp + 14]
-		mov bx, FrameOffs + 160d + 2 + 8
-		call ax2hex
-	
-		mov ax, [bp + 12]
-		mov bx, FrameOffs + 160d*2 + 2 + 8
-		call ax2hex
-		
-		mov ax, [bp + 6]
-		mov bx, FrameOffs + 160d*3 + 2 + 8
-		call ax2hex
-	
-		mov ax, [bp + 4]
-		mov bx, FrameOffs + 160d*4 + 2 + 8
-		call ax2hex
+		DrawReg 14, 160d+10d 
+		DrawReg 12, 160d*2+10d
+		DrawReg 6, 160d*3+10d
+		DrawReg 4, 160d*4+10d
 
 Done:
 		mov al, 20h
@@ -209,7 +204,7 @@ Done:
 Old08Ofs:	dw 0
 Old08Seg:	dw 0
 			endp
-
+		
 include writeln.asm
 include frame.asm
 include ax2hex.asm
